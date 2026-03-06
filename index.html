@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>On Road</title>
+    <style>
+      /* ─── Reset & Base ─── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --primary: #233b55;
+        --primary-d: #233b55;
+        --accent: #e8a020;
+        --accent-d: #c8871a;
+        --bg: #f4f6f3;
+        --card-bg: #ffffff;
+        --text: #1c2b28;
+        --muted: #6b7d79;
+        --border: #dde5e3;
+        --radius: 14px;
+        --shadow: 0 4px 24px rgba(26, 107, 92, 0.1);
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* ─── Header ─── */
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-d) 0%,
+          var(--primary) 100%
+        );
+        color: #fff;
+        padding: 0 16px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
+      }
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+      }
+      .logo {
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .logo span {
+        font-size: 1.4rem;
+      }
+      .tagline {
+        font-size: 0.78rem;
+        opacity: 0.8;
+      }
+
+      /* ─── Hero ─── */
+      .hero {
+        background: linear-gradient(
+          160deg,
+          var(--primary) 0%,
+          #233b55 60%,
+          #356eab 100%
+        );
+        color: #fff;
+        text-align: center;
+        padding: 40px 20px 36px;
+      }
+      .hero h1 {
+        font-size: 1.7rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        line-height: 1.2;
+      }
+      .hero p {
+        font-size: 0.97rem;
+        opacity: 0.88;
+        line-height: 1.55;
+      }
+
+      /* ─── Tour Grid ─── */
+      main {
+        padding: 24px 14px 64px;
+      }
+      .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-d);
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid var(--accent);
+        display: inline-block;
+      }
+      .tours-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      /* ─── Tour Card ─── */
+      .tour-card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border);
+      }
+
+      .tour-image {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        display: block;
+        background: linear-gradient(135deg, #b2dfdb, #80cbc4);
+      }
+      .tour-image-placeholder {
+        width: 100%;
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        background: linear-gradient(135deg, #b2dfdb, #80cbc4);
+      }
+
+      .card-body {
+        padding: 16px 16px 0;
+        flex: 1;
+      }
+      .tour-badge {
+        display: inline-block;
+        background: var(--accent);
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: 20px;
+        margin-bottom: 8px;
+      }
+      .tour-name {
+        font-size: 1.08rem;
+        font-weight: 700;
+        color: var(--primary-d);
+        margin-bottom: 8px;
+        line-height: 1.3;
+      }
+
+      .tour-meta {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+      .tour-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .tour-short-desc {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.55;
+        margin-bottom: 12px;
+      }
+
+      /* More info collapsible */
+      .more-info-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--primary);
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+        transition: color 0.18s;
+      }
+      .more-info-btn:hover {
+        color: var(--primary-d);
+      }
+      .more-info-btn .arrow {
+        transition: transform 0.28s;
+        display: inline-block;
+      }
+      .more-info-btn.open .arrow {
+        transform: rotate(180deg);
+      }
+
+      .more-info-content {
+        max-height: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+          padding 0.28s;
+        padding: 0 0;
+      }
+      .more-info-content.open {
+        max-height: 400px;
+        padding-bottom: 12px;
+      }
+      .more-info-content p {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.65;
+        margin-bottom: 10px;
+      }
+      .highlights {
+        list-style: none;
+        padding: 0;
+      }
+      .highlights li {
+        font-size: 0.88rem;
+        color: var(--text);
+        padding: 4px 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .highlights li::before {
+        content: "✓";
+        color: var(--primary);
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      /* Card Footer */
+      .card-footer {
+        padding: 13px 16px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border-top: 1px solid var(--border);
+        margin-top: 12px;
+      }
+      .price-tag {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--primary-d);
+      }
+      .price-tag small {
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--muted);
+      }
+
+      .btn-select {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 10px 22px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.18s;
+        letter-spacing: 0.01em;
+      }
+      .btn-select:active {
+        opacity: 0.85;
+      }
+
+      /* ─── BOOKING PAGE (hidden by default) ─── */
+      #booking-page {
+        display: none;
+        min-height: 100vh;
+        background: var(--bg);
+      }
+      #booking-page.active {
+        display: block;
+      }
+      #tours-page.hidden {
+        display: none;
+      }
+
+      .booking-hero {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+      }
+      .booking-hero img,
+      .booking-hero .hero-placeholder {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .booking-hero .hero-placeholder {
+        background: linear-gradient(135deg, var(--primary), #2e9e88);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 6rem;
+      }
+      .booking-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.6) 0%,
+          transparent 60%
+        );
+        display: flex;
+        align-items: flex-end;
+        padding: 32px;
+      }
+      .booking-hero-overlay h2 {
+        color: #fff;
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.2;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+      }
+
+      .booking-body {
+        padding: 20px 14px 64px;
+      }
+
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: none;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        border-radius: 8px;
+        padding: 8px 18px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 28px;
+        transition:
+          background 0.18s,
+          color 0.18s;
+      }
+      .back-btn:hover {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .booking-desc-box {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: var(--shadow);
+      }
+      .booking-desc-box h3 {
+        color: var(--primary-d);
+        font-size: 1rem;
+        margin-bottom: 8px;
+      }
+      .booking-desc-box p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+
+      .booking-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .meta-chip {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Form */
+      .booking-form-box {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 20px;
+        box-shadow: var(--shadow);
+      }
+      .booking-form-box h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--primary-d);
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--accent);
+      }
+      .form-row {
+        margin-bottom: 16px;
+      }
+      .form-row label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+      .form-row label .req {
+        color: var(--accent);
+        margin-left: 2px;
+      }
+      .form-row input,
+      .form-row select {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: 9px;
+        font-size: 1rem;
+        color: var(--text);
+        background: #fff;
+        transition:
+          border-color 0.18s,
+          box-shadow 0.18s;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .form-row input:focus,
+      .form-row select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(26, 107, 92, 0.12);
+      }
+      /* Always single column on mobile */
+      .form-two-col {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .btn-submit {
+        width: 100%;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 4px;
+        transition: background 0.18s;
+        letter-spacing: 0.01em;
+      }
+      .btn-submit:active {
+        opacity: 0.88;
+      }
+      .btn-submit:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      /* Success message */
+      .success-box {
+        display: none;
+        text-align: center;
+        padding: 48px 28px;
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+      .success-box .icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+      }
+      .success-box h3 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary-d);
+        margin-bottom: 10px;
+      }
+      .success-box p {
+        color: var(--muted);
+        line-height: 1.6;
+        margin-bottom: 22px;
+      }
+      .success-box .btn-back-home {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 11px 28px;
+        font-size: 0.97rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.18s;
+      }
+      .success-box .btn-back-home:hover {
+        background: var(--primary-d);
+      }
+
+      /* Loading spinner */
+      .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 3px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ─── Footer ─── */
+      footer {
+        background: var(--primary-d);
+        color: rgba(255, 255, 255, 0.7);
+        text-align: center;
+        padding: 22px;
+        font-size: 0.83rem;
+      }
+      footer strong {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ══════════════════════════════════════════════════════════
+     SHARED HEADER
+══════════════════════════════════════════════════════════ -->
+    <header>
+      <div class="header-inner">
+        <div class="logo">
+          <img
+            src="logo.png"
+            style="height: 64px; width: auto; object-fit: contain"
+          />
+        </div>
+        <div class="tagline">Discover the world with us</div>
+      </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════════════════════
+     PAGE 1 — TOUR LISTING
+══════════════════════════════════════════════════════════ -->
+    <div id="tours-page">
+      <section class="hero">
+        <h1>Your Next Adventure Awaits</h1>
+        <p>
+          Browse our handpicked tour packages and book your dream trip in just a
+          few clicks.
+        </p>
+      </section>
+
+      <main>
+        <div class="section-title">Our Tour Packages</div>
+        <div class="tours-grid" id="tours-grid">
+          <!-- Cards injected by JS -->
+        </div>
+      </main>
+
+      <footer>
+        <strong>On Road</strong> &nbsp;·&nbsp; All rights reserved © 2026
+      </footer>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+     PAGE 2 — BOOKING FORM
+══════════════════════════════════════════════════════════ -->
+    <div id="booking-page">
+      <div class="booking-body">
+        <button class="back-btn" onclick="goBack()">← Back to Tours</button>
+
+        <!-- Tour hero image -->
+        <div
+          class="booking-hero"
+          id="booking-hero"
+          style="border-radius: 14px; overflow: hidden; margin-bottom: 28px"
+        >
+          <!-- filled by JS -->
+        </div>
+
+        <!-- Tour description -->
+        <div class="booking-desc-box" id="booking-desc-box">
+          <!-- filled by JS -->
+        </div>
+
+        <!-- Booking form -->
+        <div class="booking-form-box" id="booking-form-box">
+          <h3>📋 Complete Your Booking</h3>
+          <form id="booking-form" novalidate>
+            <div class="form-two-col">
+              <div class="form-row">
+                <label>Full Name <span class="req">*</span></label>
+                <input
+                  type="text"
+                  id="f-name"
+                  placeholder="e.g. John Smith"
+                  required
+                />
+              </div>
+              <div class="form-row">
+                <label>Phone Number <span class="req">*</span></label>
+                <input
+                  type="tel"
+                  id="f-phone"
+                  placeholder="e.g. +1 555 000 0000"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-two-col">
+              <div class="form-row">
+                <label>Number of Participants <span class="req">*</span></label>
+                <select id="f-participants" required>
+                  <option value="">Select…</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10+</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Preferred Tour Date <span class="req">*</span></label>
+                <input type="date" id="f-date" required />
+              </div>
+            </div>
+            <button type="submit" class="btn-submit" id="submit-btn">
+              Confirm Booking →
+            </button>
+          </form>
+        </div>
+
+        <!-- Success state -->
+        <div class="success-box" id="success-box">
+          <div class="icon">🎉</div>
+          <h3>You're all set!</h3>
+          <p>
+            Thank you for your booking. We've received your request and our team
+            will reach out to you shortly to confirm the details.
+          </p>
+          <button class="btn-back-home" onclick="goBack()">
+            Browse More Tours
+          </button>
+        </div>
+      </div>
+
+      <footer>
+        <strong>On Road</strong> &nbsp;·&nbsp; All rights reserved © 2026
+      </footer>
+    </div>
+
+    <script>
+      // ══════════════════════════════════════════════════════════
+      // CONFIGURATION
+      // ══════════════════════════════════════════════════════════
+
+      /**
+       * GOOGLE SHEETS SETUP INSTRUCTIONS
+       * ──────────────────────────────────
+       * 1. Open your Google Sheet (or create a new one).
+       * 2. Go to Extensions → Apps Script.
+       * 3. Paste the Apps Script code provided in the README/setup guide below this file.
+       * 4. Deploy it as a Web App (Execute as: Me, Who has access: Anyone).
+       * 5. Copy the Web App URL and paste it below as GOOGLE_SCRIPT_URL.
+       */
+      const GOOGLE_SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbwKQRZOLTL6DdV1SJFwKY0fBYqw6YKbPrTD3G2zW8LtciKAmW7vtQRRz9VQEMkGSw/exec";
+
+      // ══════════════════════════════════════════════════════════
+      // TOUR DATA  — replace with your real tours!
+      // ══════════════════════════════════════════════════════════
+      const tours = [
+        {
+          id: 1,
+          name: "Santorini Sunsets & Aegean Escape",
+          badge: "Most Popular",
+          emoji: "🏛️",
+          imageUrl:
+            "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80",
+          duration: "7 Days",
+          groupSize: "Max 12",
+          price: "$1,299",
+          priceNote: "/ person",
+          shortDesc:
+            "Experience the iconic whitewashed villages, crystal-clear Aegean waters, and legendary sunsets of the most beautiful island in Greece.",
+          fullDesc:
+            "Immerse yourself in the magic of Santorini — from the cliffside village of Oia to the volcanic black sand beaches of Perissa. This 7-day all-inclusive escape includes guided tours of ancient ruins, a private catamaran sailing excursion, authentic Greek cooking class, and exclusive wine tasting at a local vineyard.",
+          highlights: [
+            "Private guided tour of Akrotiri ruins",
+            "Sunset catamaran cruise with dinner",
+            "Cooking class with a local chef",
+            "Wine tasting at a Santorini vineyard",
+            "4-star cliffside hotel included",
+            "Daily breakfast + 4 dinners",
+          ],
+        },
+        {
+          id: 2,
+          name: "Kyoto Cherry Blossom Journey",
+          badge: "Seasonal Special",
+          emoji: "🌸",
+          imageUrl:
+            "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80",
+          duration: "10 Days",
+          groupSize: "Max 10",
+          price: "$2,199",
+          priceNote: "/ person",
+          shortDesc:
+            "Walk beneath blooming sakura trees in ancient Kyoto, discover traditional tea ceremonies, and explore Japan's most beautiful temples and gardens.",
+          fullDesc:
+            "Perfectly timed to coincide with cherry blossom season (late March–early April), this 10-day journey takes you through Kyoto's UNESCO-listed temples, bamboo forests, and lantern-lit geisha districts. You'll participate in a traditional tea ceremony, visit the Fushimi Inari shrine at dawn, and take a day trip to Nara to meet the famous free-roaming deer.",
+          highlights: [
+            "Timed to peak cherry blossom season",
+            "Traditional tea ceremony experience",
+            "Dawn visit to Fushimi Inari Shrine",
+            "Day trip to Nara & Deer Park",
+            "Arashiyama Bamboo Grove guided walk",
+            "Stay in a traditional Ryokan inn",
+          ],
+        },
+        {
+          id: 3,
+          name: "Machu Picchu & Inca Trail Trek",
+          badge: "Adventure",
+          emoji: "🏔️",
+          imageUrl:
+            "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800&q=80",
+          duration: "8 Days",
+          groupSize: "Max 8",
+          price: "$1,799",
+          priceNote: "/ person",
+          shortDesc:
+            "Hike the legendary Inca Trail through cloud forests and ancient ruins, arriving at the Sun Gate for a sunrise view of Machu Picchu you'll never forget.",
+          fullDesc:
+            "This 8-day adventure combines culture, history, and breathtaking trekking. Starting in Cusco, you'll acclimatize for two days exploring the Sacred Valley before embarking on the 4-day classic Inca Trail trek to Machu Picchu. Certified guides lead you through diverse ecosystems and Inca archaeological sites, ending at the iconic Sun Gate at sunrise.",
+          highlights: [
+            "4-day classic Inca Trail permit included",
+            "Certified bilingual guide throughout",
+            "2-day Sacred Valley exploration",
+            "Train return from Aguas Calientes",
+            "All camping gear provided",
+            "Acclimatization days in Cusco",
+          ],
+        },
+        {
+          id: 4,
+          name: "Safari Under African Stars",
+          badge: "Luxury",
+          emoji: "🦁",
+          imageUrl:
+            "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&q=80",
+          duration: "9 Days",
+          groupSize: "Max 6",
+          price: "$3,899",
+          priceNote: "/ person",
+          shortDesc:
+            "Track the Big Five across Kenya's Maasai Mara, sleep under a canopy of stars in luxury eco-tents, and witness the Great Migration up close.",
+          fullDesc:
+            "A once-in-a-lifetime luxury safari experience in Kenya's world-famous Maasai Mara. Stay in exclusive eco-lodges and luxury tented camps, go on twice-daily game drives with expert trackers, and get a chance to witness the Great Wildebeest Migration (seasonal). Includes a cultural visit to an authentic Maasai village and a guided bush walk.",
+          highlights: [
+            "Twice-daily game drives (6 days)",
+            "Luxury eco-lodge & tented camp stays",
+            "Expert wildlife tracker guide",
+            "Maasai village cultural experience",
+            "Hot air balloon ride (sunrise)",
+            "All meals included throughout",
+          ],
+        },
+        {
+          id: 5,
+          name: "Amalfi Coast & Tuscany Escape",
+          badge: "Romantic",
+          emoji: "🍷",
+          imageUrl:
+            "https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800&q=80",
+          duration: "11 Days",
+          groupSize: "Max 14",
+          price: "$1,999",
+          priceNote: "/ person",
+          shortDesc:
+            "Wind along cliff-hugging roads of the Amalfi Coast, then drift into the Tuscan countryside for wine, art, and la dolce vita.",
+          fullDesc:
+            "Begin in the pastel-colored villages of the Amalfi Coast — Positano, Ravello, and Amalfi itself — before traveling north to Tuscany's rolling vineyards and medieval hilltop towns. This 11-day tour includes a private boat tour of the Amalfi coastline, a Chianti wine-tasting tour, a Florence art and Uffizi Gallery tour, and a hands-on pasta-making class in a Tuscan farmhouse.",
+          highlights: [
+            "Private boat tour of Amalfi Coast",
+            "Chianti wine-tasting tour",
+            "Uffizi Gallery guided art tour",
+            "Hands-on Tuscan pasta class",
+            "Day trips to Pompeii & Siena",
+            "Boutique hotels throughout",
+          ],
+        },
+        {
+          id: 6,
+          name: "Northern Lights Iceland Expedition",
+          badge: "Winter Special",
+          emoji: "🌌",
+          imageUrl:
+            "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80",
+          duration: "6 Days",
+          groupSize: "Max 10",
+          price: "$1,549",
+          priceNote: "/ person",
+          shortDesc:
+            "Chase the aurora borealis across Iceland's dramatic volcanic landscape — geysers, waterfalls, black sand beaches, and glowing night skies await.",
+          fullDesc:
+            "From October to March, Iceland becomes the world's best place to witness the Northern Lights. This 6-day expedition takes you along the Golden Circle, to the black sand beaches of Reynisfjara, into ice caves in Vatnajökull glacier, and on a dedicated Northern Lights hunting tour every night. Expert naturalist guides explain the science behind the aurora while you soak in steaming geothermal hot springs.",
+          highlights: [
+            "Nightly Northern Lights hunting tours",
+            "Golden Circle full-day tour",
+            "Ice cave exploration in Vatnajökull",
+            "Reynisfjara black sand beach visit",
+            "Geothermal hot spring evening",
+            "Small group (max 10) for intimacy",
+          ],
+        },
+      ];
+
+      // ══════════════════════════════════════════════════════════
+      // RENDER TOUR CARDS
+      // ══════════════════════════════════════════════════════════
+      function renderTours() {
+        const grid = document.getElementById("tours-grid");
+        grid.innerHTML = tours
+          .map(
+            (t) => `
+    <div class="tour-card">
+      ${
+        t.imageUrl
+          ? `<img class="tour-image" src="${t.imageUrl}" alt="${t.name}" loading="lazy" onerror="this.outerHTML='<div class=\'tour-image-placeholder\'>${t.emoji}</div>'">`
+          : `<div class="tour-image-placeholder">${t.emoji}</div>`
+      }
+      <div class="card-body">
+        <div class="tour-badge">${t.badge}</div>
+        <div class="tour-name">${t.name}</div>
+        <div class="tour-meta">
+          <span>📅 ${t.duration}</span>
+          <span>👥 ${t.groupSize}</span>
+        </div>
+        <div class="tour-short-desc">${t.shortDesc}</div>
+        <button class="more-info-btn" onclick="toggleMoreInfo(this, ${t.id})">
+          <span class="arrow">▼</span><span class="btn-label"> More Info</span>
+        </button>
+        <div class="more-info-content" id="more-${t.id}">
+          <p>${t.fullDesc}</p>
+          <ul class="highlights">
+            ${t.highlights.map((h) => `<li>${h}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="price-tag">${t.price} <small>${t.priceNote}</small></div>
+        <button class="btn-select" onclick="selectTour(${t.id})">Select →</button>
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      function toggleMoreInfo(btn, id) {
+        const panel = document.getElementById(`more-${id}`);
+        const isOpen = panel.classList.toggle("open");
+        btn.classList.toggle("open", isOpen);
+        btn.querySelector(".btn-label").textContent = isOpen
+          ? " Less Info"
+          : " More Info";
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // NAVIGATION
+      // ══════════════════════════════════════════════════════════
+      let selectedTour = null;
+
+      function selectTour(id) {
+        selectedTour = tours.find((t) => t.id === id);
+        populateBookingPage(selectedTour);
+        document.getElementById("tours-page").classList.add("hidden");
+        document.getElementById("booking-page").classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        // Reset form state
+        document.getElementById("booking-form").reset();
+        document.getElementById("booking-form-box").style.display = "block";
+        document.getElementById("success-box").style.display = "none";
+        document.getElementById("submit-btn").disabled = false;
+        document.getElementById("submit-btn").innerHTML = "Confirm Booking →";
+      }
+
+      function goBack() {
+        document.getElementById("booking-page").classList.remove("active");
+        document.getElementById("tours-page").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function populateBookingPage(tour) {
+        // Hero image
+        const hero = document.getElementById("booking-hero");
+        hero.innerHTML = tour.imageUrl
+          ? `<img src="${tour.imageUrl}" alt="${tour.name}" style="width:100%;height:320px;object-fit:cover;display:block;border-radius:14px;" onerror="this.outerHTML='<div style=\'height:320px;border-radius:14px;background:linear-gradient(135deg,#1a6b5c,#2e9e88);display:flex;align-items:center;justify-content:center;font-size:6rem\'>${tour.emoji}</div>'">`
+          : `<div style="height:320px;border-radius:14px;background:linear-gradient(135deg,#1a6b5c,#2e9e88);display:flex;align-items:center;justify-content:center;font-size:6rem">${tour.emoji}</div>`;
+
+        // Overlay with tour name
+        const overlay = document.createElement("div");
+        overlay.className = "booking-hero-overlay";
+        overlay.innerHTML = `<h2>${tour.name}</h2>`;
+        hero.style.position = "relative";
+        if (!hero.querySelector(".booking-hero-overlay")) {
+          hero.style.height = "auto";
+        }
+
+        // Description box
+        document.getElementById("booking-desc-box").innerHTML = `
+    <h3>About This Tour</h3>
+    <p>${tour.fullDesc}</p>
+    <div class="booking-meta-row">
+      <div class="meta-chip">📅 ${tour.duration}</div>
+      <div class="meta-chip">👥 ${tour.groupSize}</div>
+      <div class="meta-chip">💰 ${tour.price} per person</div>
+      <div class="meta-chip">🏷️ ${tour.badge}</div>
+    </div>
+  `;
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // FORM SUBMISSION → GOOGLE SHEETS
+      // ══════════════════════════════════════════════════════════
+      document
+        .getElementById("booking-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const name = document.getElementById("f-name").value.trim();
+          const phone = document.getElementById("f-phone").value.trim();
+          const participants = document.getElementById("f-participants").value;
+          const date = document.getElementById("f-date").value;
+
+          if (!name || !phone || !participants || !date) {
+            alert("Please fill in all required fields.");
+            return;
+          }
+
+          const payload = {
+            tourName: selectedTour.name,
+            tourId: selectedTour.id,
+            name,
+            phone,
+            participants,
+            preferredDate: date,
+            submittedAt: new Date().toISOString(),
+          };
+
+          const btn = document.getElementById("submit-btn");
+          btn.disabled = true;
+          btn.innerHTML = `<span class="spinner"></span> Submitting…`;
+
+          try {
+            // If no script URL configured, simulate success for demo purposes
+            if (
+              GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
+            ) {
+              await new Promise((r) => setTimeout(r, 1500)); // simulate network
+              console.log("DEMO MODE — Booking payload (not sent):", payload);
+            } else {
+              await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors", // required for Apps Script
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+            }
+            // Show success
+            document.getElementById("booking-form-box").style.display = "none";
+            document.getElementById("success-box").style.display = "block";
+          } catch (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = "Confirm Booking →";
+            alert(
+              "Submission failed. Please try again or contact us directly.",
+            );
+          }
+        });
+
+      // Set min date for date picker to today
+      document.getElementById("f-date").min = new Date()
+        .toISOString()
+        .split("T")[0];
+
+      // Init
+      renderTours();
+    </script>
+  </body>
+</html>
