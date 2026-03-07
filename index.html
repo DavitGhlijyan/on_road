@@ -128,14 +128,14 @@
 
       .tour-image {
         width: 100%;
-        height: 4 / 5;
+        aspect-ratio: 4 / 3;
         object-fit: cover;
         display: block;
         background: linear-gradient(135deg, #b2dfdb, #80cbc4);
       }
       .tour-image-placeholder {
         width: 100%;
-        height: 4 / 5;
+        aspect-ratio: 4 / 3;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -306,20 +306,8 @@
         width: 100%;
         aspect-ratio: 4 / 5;
         overflow: hidden;
-      }
-      .booking-hero img,
-      .booking-hero .hero-placeholder {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-      .booking-hero .hero-placeholder {
-        background: linear-gradient(135deg, var(--primary), #2e9e88);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 6rem;
+        border-radius: 14px;
+        margin-bottom: 28px;
       }
       .booking-hero-overlay {
         position: absolute;
@@ -332,6 +320,8 @@
         display: flex;
         align-items: flex-end;
         padding: 32px;
+        pointer-events: none; /* so overlay doesn't block carousel buttons */
+        z-index: 2;
       }
       .booking-hero-overlay h2 {
         color: #fff;
@@ -339,6 +329,89 @@
         font-weight: 800;
         line-height: 1.2;
         text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+      }
+
+      /* ─── Carousel (Booking Page only) ─── */
+      /*
+        CHANGE 3 — New CSS block.
+        The carousel lives entirely inside .booking-hero, which already
+        provides the aspect-ratio, border-radius, and overflow:hidden.
+        All carousel elements are sized relative to that container.
+      */
+      .carousel {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      /* The track holds all slides in a horizontal row.
+         Sliding is done by translating it left by (index × 100%). */
+      .carousel-track {
+        display: flex;
+        height: 100%;
+        transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+      }
+      /* Each slide is exactly as wide as the container so only one is visible. */
+      .carousel-slide {
+        min-width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        flex-shrink: 0;
+      }
+      /* Prev / Next arrow buttons */
+      .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.42);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.4rem;
+        cursor: pointer;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.18s;
+        line-height: 1;
+      }
+      .carousel-btn:hover {
+        background: rgba(0, 0, 0, 0.72);
+      }
+      .carousel-btn.prev {
+        left: 12px;
+      }
+      .carousel-btn.next {
+        right: 12px;
+      }
+      /* Dot indicators row — sits above the title overlay */
+      .carousel-dots {
+        position: absolute;
+        bottom: 54px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 7px;
+        z-index: 3;
+      }
+      .carousel-dots .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.45);
+        border: 1.5px solid rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        transition:
+          background 0.18s,
+          transform 0.18s;
+      }
+      .carousel-dots .dot.active {
+        background: #fff;
+        transform: scale(1.3);
       }
 
       .booking-body {
@@ -610,13 +683,14 @@
       <div class="booking-body">
         <button class="back-btn" onclick="goBack()">← Back to Tours</button>
 
-        <!-- Tour hero image -->
-        <div
-          class="booking-hero"
-          id="booking-hero"
-          style="border-radius: 14px; overflow: hidden; margin-bottom: 28px"
-        >
-          <!-- filled by JS -->
+        <!-- Tour hero carousel -->
+        <!--
+          CHANGE 4 — The booking-hero div no longer has inline style
+          overrides. border-radius and margin-bottom are now in the CSS
+          (.booking-hero rule above) so the element is clean.
+        -->
+        <div class="booking-hero" id="booking-hero">
+          <!-- carousel injected by JS via populateBookingPage() -->
         </div>
 
         <!-- Tour description -->
@@ -643,7 +717,7 @@
                 <input
                   type="tel"
                   id="f-phone"
-                  placeholder="e.g. +1 555 000 0000"
+                  placeholder="e.g. +374 77 123 456"
                   required
                 />
               </div>
@@ -699,30 +773,30 @@
       // ══════════════════════════════════════════════════════════
       // CONFIGURATION
       // ══════════════════════════════════════════════════════════
-
-      /**
-       * GOOGLE SHEETS SETUP INSTRUCTIONS
-       * ──────────────────────────────────
-       * 1. Open your Google Sheet (or create a new one).
-       * 2. Go to Extensions → Apps Script.
-       * 3. Paste the Apps Script code provided in the README/setup guide below this file.
-       * 4. Deploy it as a Web App (Execute as: Me, Who has access: Anyone).
-       * 5. Copy the Web App URL and paste it below as GOOGLE_SCRIPT_URL.
-       */
       const GOOGLE_SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbwKQRZOLTL6DdV1SJFwKY0fBYqw6YKbPrTD3G2zW8LtciKAmW7vtQRRz9VQEMkGSw/exec";
 
       // ══════════════════════════════════════════════════════════
-      // TOUR DATA  — replace with your real tours!
+      // TOUR DATA
+      // CHANGE 1 — imageUrl (single string) replaced with
+      // images (array of strings) on every tour object.
+      // The first item in the array is still used as the thumbnail
+      // on the listing cards; all items power the booking carousel.
       // ══════════════════════════════════════════════════════════
+
       const tours = [
         {
           id: 1,
           name: "The Hidden parts of Dilijan",
           badge: "Most Popular",
-          // emoji: "🏛️",
-          imageUrl:
-            "https://res.cloudinary.com/dtidben7k/image/upload/w_800,q_75,f_auto/Amberd_-_5_ui424d.png",
+          images: [
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8166_q1d3o0.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8170_mzmjfe.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8168_sbjrdp.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8169_pow8zq.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875173/IMG_8171_nhfrt5.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875179/IMG_8167_krh38j.png",
+          ],
           duration: "1 Day",
           groupSize: "Max 12",
           price: "$1,299",
@@ -730,7 +804,7 @@
           shortDesc:
             "Stop being a tourist and start being an explorer. Discover the magical, hidden forests of Armenia where Google Maps won't take you.",
           fullDesc:
-            "Most travelers stick to the main roads and miss 80% of the magic. Immerse yourself in the enchanting wilderness of Dilijan—from the silence of moss-covered ruins to spectacular waterfalls hidden entirely from the world. This stress-free excursion means no rentals, no maps, and no getting lost. We handle the “how” so you can focus on the “wow,” taking you deep into the side of Armenia that most people completely miss.",
+            'Most travelers stick to the main roads and miss 80% of the magic. Immerse yourself in the enchanting wilderness of Dilijan—from the silence of moss-covered ruins to spectacular waterfalls hidden entirely from the world. This stress-free excursion means no rentals, no maps, and no getting lost. We handle the "how" so you can focus on the "wow," taking you deep into the side of Armenia that most people completely miss.',
           highlights: [
             "Guided exploration of moss-covered ruins",
             "Trek to a hidden, secluded waterfall",
@@ -745,8 +819,14 @@
           name: "Kyoto Cherry Blossom Journey",
           badge: "Seasonal Special",
           emoji: "🌸",
-          imageUrl:
-            "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80",
+          images: [
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8166_q1d3o0.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8170_mzmjfe.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8168_sbjrdp.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8169_pow8zq.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875173/IMG_8171_nhfrt5.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875179/IMG_8167_krh38j.png",
+          ],
           duration: "10 Days",
           groupSize: "Max 10",
           price: "$2,199",
@@ -769,8 +849,14 @@
           name: "Machu Picchu & Inca Trail Trek",
           badge: "Adventure",
           emoji: "🏔️",
-          imageUrl:
-            "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800&q=80",
+          images: [
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8166_q1d3o0.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8170_mzmjfe.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8168_sbjrdp.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8169_pow8zq.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875173/IMG_8171_nhfrt5.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875179/IMG_8167_krh38j.png",
+          ],
           duration: "8 Days",
           groupSize: "Max 8",
           price: "$1,799",
@@ -793,8 +879,14 @@
           name: "Safari Under African Stars",
           badge: "Luxury",
           emoji: "🦁",
-          imageUrl:
-            "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&q=80",
+          images: [
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8166_q1d3o0.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8170_mzmjfe.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8168_sbjrdp.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8169_pow8zq.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875173/IMG_8171_nhfrt5.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875179/IMG_8167_krh38j.png",
+          ],
           duration: "9 Days",
           groupSize: "Max 6",
           price: "$3,899",
@@ -817,8 +909,14 @@
           name: "Amalfi Coast & Tuscany Escape",
           badge: "Romantic",
           emoji: "🍷",
-          imageUrl:
-            "https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800&q=80",
+          images: [
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8166_q1d3o0.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8170_mzmjfe.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8168_sbjrdp.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8169_pow8zq.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875173/IMG_8171_nhfrt5.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875179/IMG_8167_krh38j.png",
+          ],
           duration: "11 Days",
           groupSize: "Max 14",
           price: "$1,999",
@@ -841,8 +939,14 @@
           name: "Northern Lights Iceland Expedition",
           badge: "Winter Special",
           emoji: "🌌",
-          imageUrl:
-            "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80",
+          images: [
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8166_q1d3o0.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8170_mzmjfe.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8168_sbjrdp.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875172/IMG_8169_pow8zq.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875173/IMG_8171_nhfrt5.png",
+            "https://res.cloudinary.com/dtidben7k/image/upload/v1772875179/IMG_8167_krh38j.png",
+          ],
           duration: "6 Days",
           groupSize: "Max 10",
           price: "$1,549",
@@ -864,7 +968,20 @@
 
       // ══════════════════════════════════════════════════════════
       // RENDER TOUR CARDS
+      // CHANGE 2 — Two references to t.imageUrl swapped for
+      // t.images[0] so the listing card still shows a single
+      // thumbnail (the first image in the array).
       // ══════════════════════════════════════════════════════════
+
+      // Fallback handler for broken tour card thumbnails.
+      // Reads the emoji from the data-emoji attribute to avoid
+      // nested-quote conflicts inside the onerror HTML attribute.
+      function handleTourImgError(img) {
+        const emoji = img.dataset.emoji || "";
+        img.outerHTML =
+          '<div class="tour-image-placeholder">' + emoji + "</div>";
+      }
+
       function renderTours() {
         const grid = document.getElementById("tours-grid");
         grid.innerHTML = tours
@@ -872,9 +989,9 @@
             (t) => `
     <div class="tour-card">
       ${
-        t.imageUrl
-          ? `<img class="tour-image" src="${t.imageUrl}" alt="${t.name}" loading="lazy" onerror="this.outerHTML='<div class=\'tour-image-placeholder\'>${t.emoji}</div>'">`
-          : `<div class="tour-image-placeholder">${t.emoji}</div>`
+        t.images && t.images[0]
+          ? `<img class="tour-image" src="${t.images[0]}" alt="${t.name}" loading="lazy" data-emoji="${t.emoji || ""}" onerror="handleTourImgError(this)">`
+          : `<div class="tour-image-placeholder">${t.emoji || ""}</div>`
       }
       <div class="card-body">
         <div class="tour-badge">${t.badge}</div>
@@ -914,61 +1031,209 @@
       }
 
       // ══════════════════════════════════════════════════════════
+      // CAROUSEL STATE & HELPERS  (booking page only)
+      // CHANGE 5 — Three new functions + one state variable.
+      // carouselIndex tracks which slide is currently visible.
+      // It is reset to 0 every time a new tour is opened.
+      // ══════════════════════════════════════════════════════════
+
+      let carouselIndex = 0;
+
+      // Move forward (+1) or backward (-1), wrapping around.
+      function carouselGo(dir) {
+        const total = selectedTour.images.length;
+        carouselIndex = (carouselIndex + dir + total) % total;
+        updateCarousel();
+      }
+
+      // Jump directly to a specific slide index (used by dot clicks).
+      function carouselGoTo(index) {
+        carouselIndex = index;
+        updateCarousel();
+      }
+
+      // Apply the current index to the DOM: slide the track and
+      // highlight the matching dot.
+      function updateCarousel() {
+        const track = document.querySelector(".carousel-track");
+        const dots = document.querySelectorAll(".carousel-dots .dot");
+        if (track) {
+          track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+        }
+        dots.forEach((d, i) =>
+          d.classList.toggle("active", i === carouselIndex),
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // NAVIGATION
       // ══════════════════════════════════════════════════════════
       let selectedTour = null;
 
-      function selectTour(id) {
-        selectedTour = tours.find((t) => t.id === id);
-        populateBookingPage(selectedTour);
-        document.getElementById("tours-page").classList.add("hidden");
-        document.getElementById("booking-page").classList.add("active");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        // Reset form state
-        document.getElementById("booking-form").reset();
-        document.getElementById("booking-form-box").style.display = "block";
-        document.getElementById("success-box").style.display = "none";
-        document.getElementById("submit-btn").disabled = false;
-        document.getElementById("submit-btn").innerHTML = "Confirm Booking →";
-      }
+      // Whether the history API is usable in this context.
+      // It is blocked in sandboxed srcdoc iframes (e.g. Claude's preview).
+      const historyAvailable = (function () {
+        try {
+          // replaceState tests the same security boundary as pushState
+          // but doesn't add an extra history entry or trigger navigation.
+          history.replaceState(history.state, "");
+          return true;
+        } catch (e) {
+          return false;
+        }
+      })();
 
-      function goBack() {
+      function showToursPage() {
         document.getElementById("booking-page").classList.remove("active");
         document.getElementById("tours-page").classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
-      function populateBookingPage(tour) {
-        // Hero image
-        const hero = document.getElementById("booking-hero");
-        hero.innerHTML = tour.imageUrl
-          ? `<img src="${tour.imageUrl}" alt="${tour.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:14px;" onerror="this.outerHTML='<div style=\'height:320px;border-radius:14px;background:linear-gradient(135deg,#1a6b5c,#2e9e88);display:flex;align-items:center;justify-content:center;font-size:6rem\'>${tour.emoji}</div>'">`
-          : `<div style="height:320px;border-radius:14px;background:linear-gradient(135deg,#1a6b5c,#2e9e88);display:flex;align-items:center;justify-content:center;font-size:6rem">${tour.emoji}</div>`;
-
-        // Overlay with tour name
-        const overlay = document.createElement("div");
-        overlay.className = "booking-hero-overlay";
-        overlay.innerHTML = `<h2>${tour.name}</h2>`;
-        hero.style.position = "relative";
-        if (!hero.querySelector(".booking-hero-overlay")) {
-          hero.style.height = "auto";
+      function selectTour(id) {
+        selectedTour = tours.find((t) => t.id === id);
+        carouselIndex = 0;
+        populateBookingPage(selectedTour);
+        document.getElementById("tours-page").classList.add("hidden");
+        document.getElementById("booking-page").classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        document.getElementById("booking-form").reset();
+        document.getElementById("booking-form-box").style.display = "block";
+        document.getElementById("success-box").style.display = "none";
+        document.getElementById("submit-btn").disabled = false;
+        document.getElementById("submit-btn").innerHTML = "Confirm Booking →";
+        // Push a history entry so the browser back button works.
+        // Skipped silently when running inside a sandboxed iframe.
+        if (historyAvailable) {
+          try {
+            history.pushState({ page: "booking", tourId: id }, "", "#booking");
+          } catch (e) {}
         }
+      }
 
-        // Description box
+      function goBack() {
+        // Use the browser history when available, otherwise fall back to
+        // directly showing the tours page (e.g. inside a sandboxed iframe).
+        if (historyAvailable) {
+          try {
+            history.back();
+            return;
+          } catch (e) {}
+        }
+        showToursPage();
+      }
+
+      window.addEventListener("popstate", function (e) {
+        if (e.state && e.state.page === "booking") {
+          const tour = tours.find((t) => t.id === e.state.tourId);
+          if (tour) {
+            selectedTour = tour;
+            carouselIndex = 0;
+            populateBookingPage(tour);
+            document.getElementById("tours-page").classList.add("hidden");
+            document.getElementById("booking-page").classList.add("active");
+            document.getElementById("booking-form").reset();
+            document.getElementById("booking-form-box").style.display = "block";
+            document.getElementById("success-box").style.display = "none";
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("submit-btn").innerHTML =
+              "Confirm Booking →";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        } else {
+          showToursPage();
+        }
+      });
+
+      try {
+        if (location.hash === "#booking") {
+          history.replaceState({ page: "tours" }, "", location.pathname);
+        }
+      } catch (e) {}
+
+      // ══════════════════════════════════════════════════════════
+      // POPULATE BOOKING PAGE
+      // CHANGE 4 — The hero section is now built as a full
+      // carousel instead of a single <img>.
+      //
+      // Structure injected into #booking-hero:
+      //
+      //  <div class="carousel">
+      //    <div class="carousel-track">   ← slides here, translateX drives sliding
+      //      <img class="carousel-slide"> ← one per image URL
+      //      <img class="carousel-slide">
+      //      ...
+      //    </div>
+      //    <button class="carousel-btn prev">  ← only rendered if >1 image
+      //    <button class="carousel-btn next">
+      //    <div class="carousel-dots">         ← one dot per image
+      //      <span class="dot active">
+      //      <span class="dot">
+      //    </div>
+      //    <div class="booking-hero-overlay">  ← gradient + tour name
+      //      <h2>Tour Name</h2>               (was a dead createElement before)
+      //    </div>
+      //  </div>
+      // ══════════════════════════════════════════════════════════
+      function populateBookingPage(tour) {
+        const hero = document.getElementById("booking-hero");
+        const imgs = tour.images && tour.images.length ? tour.images : [];
+        const hasMultiple = imgs.length > 1;
+
+        hero.innerHTML = `
+          <div class="carousel">
+            <div class="carousel-track">
+              ${
+                imgs.length
+                  ? imgs
+                      .map(
+                        (url, i) =>
+                          `<img class="carousel-slide"
+                                src="${url}"
+                                alt="${tour.name} — photo ${i + 1}"
+                                onerror="this.style.background='linear-gradient(135deg,#233b55,#356eab)'; this.removeAttribute('src');">`,
+                      )
+                      .join("")
+                  : `<div class="carousel-slide" style="background:linear-gradient(135deg,#233b55,#356eab);display:flex;align-items:center;justify-content:center;font-size:5rem;">${tour.emoji || ""}</div>`
+              }
+            </div>
+
+            ${
+              hasMultiple
+                ? `<button class="carousel-btn prev" onclick="carouselGo(-1)">&#8249;</button>
+                   <button class="carousel-btn next" onclick="carouselGo(1)">&#8250;</button>
+                   <div class="carousel-dots">
+                     ${imgs
+                       .map(
+                         (_, i) =>
+                           `<span class="dot${i === 0 ? " active" : ""}" onclick="carouselGoTo(${i})"></span>`,
+                       )
+                       .join("")}
+                   </div>`
+                : ""
+            }
+
+            <div class="booking-hero-overlay">
+              <h2>${tour.name}</h2>
+            </div>
+          </div>
+        `;
+
+        // Description box (was missing from the rewrite — restored here)
         document.getElementById("booking-desc-box").innerHTML = `
-    <h3>About This Tour</h3>
-    <p>${tour.fullDesc}</p>
-    <div class="booking-meta-row">
-      <div class="meta-chip">📅 ${tour.duration}</div>
-      <div class="meta-chip">👥 ${tour.groupSize}</div>
-      <div class="meta-chip">💰 ${tour.price} per person</div>
-      <div class="meta-chip">🏷️ ${tour.badge}</div>
-    </div>
-  `;
+          <h3>About This Tour</h3>
+          <p>${tour.fullDesc}</p>
+          <div class="booking-meta-row">
+            <div class="meta-chip">📅 ${tour.duration}</div>
+            <div class="meta-chip">👥 ${tour.groupSize}</div>
+            <div class="meta-chip">💰 ${tour.price} per person</div>
+            <div class="meta-chip">🏷️ ${tour.badge}</div>
+          </div>
+        `;
       }
 
       // ══════════════════════════════════════════════════════════
       // FORM SUBMISSION → GOOGLE SHEETS
+      // (unchanged)
       // ══════════════════════════════════════════════════════════
       document
         .getElementById("booking-form")
@@ -1000,22 +1265,12 @@
           btn.innerHTML = `<span class="spinner"></span> Submitting…`;
 
           try {
-            // If no script URL configured, simulate success for demo purposes
-            if (
-              GOOGLE_SCRIPT_URL ===
-              "https://script.google.com/macros/s/AKfycbwKQRZOLTL6DdV1SJFwKY0fBYqw6YKbPrTD3G2zW8LtciKAmW7vtQRRz9VQEMkGSw/exec"
-            ) {
-              await new Promise((r) => setTimeout(r, 1500)); // simulate network
-              console.log("DEMO MODE — Booking payload (not sent):", payload);
-            } else {
-              await fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors", // required for Apps Script
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-              });
-            }
-            // Show success
+            await fetch(GOOGLE_SCRIPT_URL, {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
             document.getElementById("booking-form-box").style.display = "none";
             document.getElementById("success-box").style.display = "block";
           } catch (err) {
