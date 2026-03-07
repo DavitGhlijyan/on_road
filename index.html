@@ -128,14 +128,14 @@
 
       .tour-image {
         width: 100%;
-        height: 180px;
+        height: 4 / 5;
         object-fit: cover;
         display: block;
         background: linear-gradient(135deg, #b2dfdb, #80cbc4);
       }
       .tour-image-placeholder {
         width: 100%;
-        height: 180px;
+        height: 4 /;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -303,7 +303,8 @@
 
       .booking-hero {
         position: relative;
-        height: 320px;
+        width: 100%;
+        aspect-ratio: 4 / 5;
         overflow: hidden;
       }
       .booking-hero img,
@@ -709,26 +710,26 @@
       const tours = [
         {
           id: 1,
-          name: "Santorini Sunsets & Aegean Escape",
+          name: "The Hidden parts of Dilijan",
           badge: "Most Popular",
-          emoji: "🏛️",
+          // emoji: "🏛️",
           imageUrl:
             "https://res.cloudinary.com/dtidben7k/image/upload/w_800,q_75,f_auto/Amberd_-_5_ui424d.png",
-          duration: "7 Days",
+          duration: "1 Day",
           groupSize: "Max 12",
           price: "$1,299",
           priceNote: "/ person",
           shortDesc:
-            "Experience the iconic whitewashed villages, crystal-clear Aegean waters, and legendary sunsets of the most beautiful island in Greece.",
+            "Stop being a tourist and start being an explorer. Discover the magical, hidden forests of Armenia where Google Maps won't take you.",
           fullDesc:
-            "Immerse yourself in the magic of Santorini — from the cliffside village of Oia to the volcanic black sand beaches of Perissa. This 7-day all-inclusive escape includes guided tours of ancient ruins, a private catamaran sailing excursion, authentic Greek cooking class, and exclusive wine tasting at a local vineyard.",
+            "Most travelers stick to the main roads and miss 80% of the magic. Immerse yourself in the enchanting wilderness of Dilijan—from the silence of moss-covered ruins to spectacular waterfalls hidden entirely from the world. This stress-free excursion means no rentals, no maps, and no getting lost. We handle the “how” so you can focus on the “wow,” taking you deep into the side of Armenia that most people completely miss.",
           highlights: [
-            "Private guided tour of Akrotiri ruins",
-            "Sunset catamaran cruise with dinner",
-            "Cooking class with a local chef",
-            "Wine tasting at a Santorini vineyard",
-            "4-star cliffside hotel included",
-            "Daily breakfast + 4 dinners",
+            "Guided exploration of moss-covered ruins",
+            "Trek to a hidden, secluded waterfall",
+            "Encounters with local forest legends and nature",
+            "Zero stress: all navigation and logistics handled",
+            "Daily departures with expert local guides",
+            "Round-trip transportation included",
           ],
         },
         {
@@ -933,7 +934,7 @@
         // Hero image
         const hero = document.getElementById("booking-hero");
         hero.innerHTML = tour.imageUrl
-          ? `<img src="${tour.imageUrl}" alt="${tour.name}" style="width:100%;height:320px;object-fit:cover;display:block;border-radius:14px;" onerror="this.outerHTML='<div style=\'height:320px;border-radius:14px;background:linear-gradient(135deg,#1a6b5c,#2e9e88);display:flex;align-items:center;justify-content:center;font-size:6rem\'>${tour.emoji}</div>'">`
+          ? `<img src="${tour.imageUrl}" alt="${tour.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:14px;" onerror="this.outerHTML='<div style=\'height:320px;border-radius:14px;background:linear-gradient(135deg,#1a6b5c,#2e9e88);display:flex;align-items:center;justify-content:center;font-size:6rem\'>${tour.emoji}</div>'">`
           : `<div style="height:320px;border-radius:14px;background:linear-gradient(135deg,#1a6b5c,#2e9e88);display:flex;align-items:center;justify-content:center;font-size:6rem">${tour.emoji}</div>`;
 
         // Overlay with tour name
@@ -993,7 +994,8 @@
           try {
             // If no script URL configured, simulate success for demo purposes
             if (
-              GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
+              GOOGLE_SCRIPT_URL ===
+              "https://script.google.com/macros/s/AKfycbwKQRZOLTL6DdV1SJFwKY0fBYqw6YKbPrTD3G2zW8LtciKAmW7vtQRRz9VQEMkGSw/exec"
             ) {
               await new Promise((r) => setTimeout(r, 1500)); // simulate network
               console.log("DEMO MODE — Booking payload (not sent):", payload);
