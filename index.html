@@ -350,6 +350,12 @@
         height: 100%;
         transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
         will-change: transform;
+        cursor: grab;
+        user-select: none;
+      }
+      .carousel-track.dragging {
+        transition: none; /* instant follow while dragging */
+        cursor: grabbing;
       }
       /* Each slide is exactly as wide as the container so only one is visible. */
       .carousel-slide {
@@ -358,35 +364,7 @@
         object-fit: cover;
         display: block;
         flex-shrink: 0;
-      }
-      /* Prev / Next arrow buttons */
-      .carousel-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(0, 0, 0, 0.42);
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        font-size: 1.4rem;
-        cursor: pointer;
-        z-index: 3;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.18s;
-        line-height: 1;
-      }
-      .carousel-btn:hover {
-        background: rgba(0, 0, 0, 0.72);
-      }
-      .carousel-btn.prev {
-        left: 12px;
-      }
-      .carousel-btn.next {
-        right: 12px;
+        pointer-events: none; /* prevent drag from accidentally triggering img events */
       }
       /* Dot indicators row — sits above the title overlay */
       .carousel-dots {
@@ -1052,6 +1030,52 @@
         updateCarousel();
       }
 
+      // Attach swipe (touch) and drag (mouse) listeners to the track.
+      // A move of ≥50px triggers a slide; smaller moves are ignored.
+      function initCarouselSwipe(track) {
+        let startX = 0;
+        let dragX = 0;
+        let isDragging = false;
+
+        // ── Touch ──────────────────────────────────────────────
+        track.addEventListener(
+          "touchstart",
+          (e) => {
+            startX = e.touches[0].clientX;
+          },
+          { passive: true },
+        );
+
+        track.addEventListener(
+          "touchend",
+          (e) => {
+            const diff = startX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) carouselGo(diff > 0 ? 1 : -1);
+          },
+          { passive: true },
+        );
+
+        // ── Mouse drag ─────────────────────────────────────────
+        track.addEventListener("mousedown", (e) => {
+          startX = e.clientX;
+          isDragging = true;
+          track.classList.add("dragging");
+        });
+
+        window.addEventListener("mousemove", (e) => {
+          if (!isDragging) return;
+          dragX = e.clientX;
+        });
+
+        window.addEventListener("mouseup", () => {
+          if (!isDragging) return;
+          isDragging = false;
+          track.classList.remove("dragging");
+          const diff = startX - dragX;
+          if (Math.abs(diff) > 50) carouselGo(diff > 0 ? 1 : -1);
+        });
+      }
+
       // Apply the current index to the DOM: slide the track and
       // highlight the matching dot.
       function updateCarousel() {
@@ -1199,9 +1223,7 @@
 
             ${
               hasMultiple
-                ? `<button class="carousel-btn prev" onclick="carouselGo(-1)">&#8249;</button>
-                   <button class="carousel-btn next" onclick="carouselGo(1)">&#8250;</button>
-                   <div class="carousel-dots">
+                ? `<div class="carousel-dots">
                      ${imgs
                        .map(
                          (_, i) =>
@@ -1217,6 +1239,10 @@
             </div>
           </div>
         `;
+
+        // Attach swipe & drag listeners to the freshly rendered track
+        const track = document.querySelector(".carousel-track");
+        if (track) initCarouselSwipe(track);
 
         // Description box (was missing from the rewrite — restored here)
         document.getElementById("booking-desc-box").innerHTML = `
