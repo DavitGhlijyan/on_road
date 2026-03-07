@@ -338,24 +338,30 @@
         provides the aspect-ratio, border-radius, and overflow:hidden.
         All carousel elements are sized relative to that container.
       */
+      /* The carousel wrapper is the stable hit target — it never transforms.
+         Cursor and user-select live here so they always cover the visible area. */
       .carousel {
         position: relative;
         width: 100%;
         height: 100%;
+        cursor: grab;
+        user-select: none;
+      }
+      .carousel.dragging {
+        cursor: grabbing;
       }
       /* The track holds all slides in a horizontal row.
-         Sliding is done by translating it left by (index × 100%). */
+         Sliding is done by translating it left by (index × 100%).
+         NOTE: no cursor/user-select here — the track shifts off-screen after
+         the first swipe so it can no longer reliably receive pointer events. */
       .carousel-track {
         display: flex;
         height: 100%;
         transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
         will-change: transform;
-        cursor: grab;
-        user-select: none;
       }
-      .carousel-track.dragging {
-        transition: none; /* instant follow while dragging */
-        cursor: grabbing;
+      .carousel-track.no-transition {
+        transition: none;
       }
       /* Each slide is exactly as wide as the container so only one is visible. */
       .carousel-slide {
@@ -1030,23 +1036,48 @@
         updateCarousel();
       }
 
-      // Attach swipe (touch) and drag (mouse) listeners to the track.
-      // A move of ≥50px triggers a slide; smaller moves are ignored.
-      function initCarouselSwipe(track) {
+      // Attach swipe (touch) and drag (mouse) listeners.
+      //
+      // IMPORTANT: listeners are attached to the .carousel WRAPPER, not the
+      // .carousel-track. The track gets a CSS translateX applied on every
+      // slide change, which moves its hit-testing box off-screen. The wrapper
+      // never transforms, so it always covers the visible area and reliably
+      // receives pointer events for every swipe — not just the first one.
+      //
+      // Named window references allow cleanup on each new tour open so
+      // listeners don't stack up.
+      let _carouselMouseMove = null;
+      let _carouselMouseUp = null;
+
+      function initCarouselSwipe(el) {
+        // el = .carousel wrapper
         let startX = 0;
         let dragX = 0;
         let isDragging = false;
 
         // ── Touch ──────────────────────────────────────────────
-        track.addEventListener(
+        el.addEventListener(
           "touchstart",
           (e) => {
             startX = e.touches[0].clientX;
+            dragX = startX;
           },
           { passive: true },
         );
 
-        track.addEventListener(
+        // Non-passive: call preventDefault() so a horizontal swipe is not
+        // hijacked as a page scroll by the browser.
+        el.addEventListener(
+          "touchmove",
+          (e) => {
+            if (Math.abs(e.touches[0].clientX - startX) > 10) {
+              e.preventDefault();
+            }
+          },
+          { passive: false },
+        );
+
+        el.addEventListener(
           "touchend",
           (e) => {
             const diff = startX - e.changedTouches[0].clientX;
@@ -1056,24 +1087,33 @@
         );
 
         // ── Mouse drag ─────────────────────────────────────────
-        track.addEventListener("mousedown", (e) => {
+        el.addEventListener("mousedown", (e) => {
           startX = e.clientX;
+          dragX = e.clientX;
           isDragging = true;
-          track.classList.add("dragging");
+          el.classList.add("dragging");
         });
 
-        window.addEventListener("mousemove", (e) => {
+        if (_carouselMouseMove)
+          window.removeEventListener("mousemove", _carouselMouseMove);
+        if (_carouselMouseUp)
+          window.removeEventListener("mouseup", _carouselMouseUp);
+
+        _carouselMouseMove = (e) => {
           if (!isDragging) return;
           dragX = e.clientX;
-        });
+        };
 
-        window.addEventListener("mouseup", () => {
+        _carouselMouseUp = () => {
           if (!isDragging) return;
           isDragging = false;
-          track.classList.remove("dragging");
+          el.classList.remove("dragging");
           const diff = startX - dragX;
           if (Math.abs(diff) > 50) carouselGo(diff > 0 ? 1 : -1);
-        });
+        };
+
+        window.addEventListener("mousemove", _carouselMouseMove);
+        window.addEventListener("mouseup", _carouselMouseUp);
       }
 
       // Apply the current index to the DOM: slide the track and
@@ -1240,9 +1280,11 @@
           </div>
         `;
 
-        // Attach swipe & drag listeners to the freshly rendered track
-        const track = document.querySelector(".carousel-track");
-        if (track) initCarouselSwipe(track);
+        // Attach swipe & drag listeners to the stable .carousel wrapper.
+        // (NOT the .carousel-track — that element shifts off-screen after
+        //  the first translateX, losing its hit-testing area.)
+        const carousel = hero.querySelector(".carousel");
+        if (carousel) initCarouselSwipe(carousel);
 
         // Description box (was missing from the rewrite — restored here)
         document.getElementById("booking-desc-box").innerHTML = `
