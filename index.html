@@ -135,7 +135,7 @@
       }
       .tour-image-placeholder {
         width: 100%;
-        height: 4 /;
+        height: 4 / 5;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -454,6 +454,14 @@
       .form-row select:focus {
         border-color: var(--primary);
         box-shadow: 0 0 0 3px rgba(26, 107, 92, 0.12);
+      }
+      /* Fix iOS Safari date input rendering bug */
+      .form-row input[type="date"] {
+        -webkit-appearance: textfield;
+        appearance: textfield;
+        min-height: 46px;
+        line-height: 1.5;
+        display: block;
       }
       /* Always single column on mobile */
       .form-two-col {
