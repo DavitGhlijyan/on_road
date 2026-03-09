@@ -140,14 +140,14 @@
 
       .tour-image {
         width: 100%;
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 4 / 5;
         object-fit: cover;
         display: block;
         background: linear-gradient(135deg, #b2dfdb, #80cbc4);
       }
       .tour-image-placeholder {
         width: 100%;
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 4 / 5;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -321,26 +321,12 @@
         border-radius: 14px;
         margin-bottom: 28px;
       }
-      .booking-hero-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.6) 0%,
-          transparent 60%
-        );
-        display: flex;
-        align-items: flex-end;
-        padding: 32px;
-        pointer-events: none; /* so overlay doesn't block carousel buttons */
-        z-index: 2;
-      }
-      .booking-hero-overlay h2 {
-        color: #fff;
-        font-size: 1.35rem;
+      .booking-tour-title {
+        font-size: 1.45rem;
         font-weight: 800;
-        line-height: 1.2;
-        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+        color: var(--primary-d);
+        line-height: 1.25;
+        margin: 0 0 14px 0;
       }
 
       /* ─── Carousel (Booking Page only) ─── */
@@ -717,7 +703,7 @@
           <!-- carousel injected by JS via populateBookingPage() -->
         </div>
 
-        <!-- Tour description -->
+        <!-- Tour description (title injected inside by JS) -->
         <div class="booking-desc-box" id="booking-desc-box">
           <!-- filled by JS -->
         </div>
@@ -1273,9 +1259,7 @@
       //      <span class="dot active">
       //      <span class="dot">
       //    </div>
-      //    <div class="booking-hero-overlay">  ← gradient + tour name
-      //      <h2>Tour Name</h2>               (was a dead createElement before)
-      //    </div>
+      //  (tour name rendered below the hero as <h2 class="booking-tour-title">)
       //  </div>
       // ══════════════════════════════════════════════════════════
       function populateBookingPage(tour) {
@@ -1314,9 +1298,6 @@
                 : ""
             }
 
-            <div class="booking-hero-overlay">
-              <h2>${tour.name}</h2>
-            </div>
           </div>
         `;
 
@@ -1326,8 +1307,9 @@
         const carousel = hero.querySelector(".carousel");
         if (carousel) initCarouselSwipe(carousel);
 
-        // Description box (was missing from the rewrite — restored here)
+        // Description box — tour title sits at the top, above "About This Tour"
         document.getElementById("booking-desc-box").innerHTML = `
+          <h2 class="booking-tour-title">${tour.name}</h2>
           <h3>About This Tour</h3>
           <p>${tour.fullDesc}</p>
           <div class="booking-meta-row">
